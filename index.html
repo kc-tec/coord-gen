@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>KCPTTC | COORD GEN</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap');
+        
+        body {
+            font-family: 'Inter', sans-serif;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        .glass-card {
+            background: rgba(255, 255, 255, 0.98);
+            backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.4);
+        }
+
+        .brand-gradient {
+            background: linear-gradient(135deg, #1e40af 0%, #1e3a8a 100%);
+        }
+
+        .coord-pill {
+            background: #f1f5f9;
+            border: 2px dashed #cbd5e1;
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .coord-pill:active {
+            border-color: #2563eb;
+            background: #eff6ff;
+            transform: scale(0.98);
+        }
+
+        @keyframes pulse-soft {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+        .anim-pulse { animation: pulse-soft 2s infinite; }
+    </style>
+</head>
+<body class="bg-slate-100 min-h-screen flex items-center justify-center p-4">
+
+    <div class="w-full max-w-sm">
+        <div class="glass-card rounded-[2.5rem] shadow-2xl overflow-hidden">
+            <!-- Header with Branding -->
+            <div class="brand-gradient p-6 text-white text-center">
+                <h2 class="text-3xl font-extrabold tracking-tight mb-1">KCPTTC</h2>
+                <p class="text-[10px] font-bold text-blue-100/80 uppercase tracking-widest mb-4">Kampong Cham Teacher Training Center</p>
+                
+                <div class="inline-flex items-center justify-center w-12 h-12 bg-white/20 rounded-xl backdrop-blur-md mb-2">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                    </svg>
+                </div>
+                <p class="text-[10px] font-black text-blue-100 uppercase tracking-[0.2em]">COORD GEN</p>
+            </div>
+
+            <!-- Main Content -->
+            <div class="p-8 space-y-6">
+                <div class="space-y-4">
+                    <div class="flex justify-between items-center px-1">
+                        <span class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Result</span>
+                        <span id="status-dot" class="flex items-center gap-1.5 text-[10px] font-bold text-slate-400 uppercase">
+                            <span class="w-2 h-2 rounded-full bg-slate-300"></span>
+                            <span id="status-text">Standby</span>
+                        </span>
+                    </div>
+
+                    <!-- Tap to Copy Area -->
+                    <div id="copy-trigger" class="coord-pill rounded-2xl p-6 cursor-pointer relative group">
+                        <div id="combined-display" class="text-xl font-mono font-bold text-slate-800 break-all text-center">
+                            0.0000,0.0000
+                        </div>
+                        <div id="tap-hint" class="text-[10px] text-center text-blue-600 font-bold mt-3 opacity-0 transition-opacity uppercase tracking-tighter">
+                            Tap to copy
+                        </div>
+                    </div>
+
+                    <!-- Metadata -->
+                    <div class="grid grid-cols-2 gap-3">
+                        <div class="bg-slate-50/50 p-3 rounded-xl border border-slate-100">
+                            <span class="block text-[9px] text-slate-400 font-bold uppercase mb-1">Accuracy</span>
+                            <span id="acc-val" class="text-xs font-mono font-bold text-slate-600">--</span>
+                        </div>
+                        <div class="bg-slate-50/50 p-3 rounded-xl border border-slate-100">
+                            <span class="block text-[9px] text-slate-400 font-bold uppercase mb-1">Time</span>
+                            <span id="time-val" class="text-xs font-mono font-bold text-slate-600">--</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Main Action Button -->
+                <button id="main-action" class="w-full py-4 bg-blue-700 hover:bg-blue-800 text-white rounded-2xl font-bold shadow-lg shadow-blue-900/20 transition-all active:scale-[0.97] flex items-center justify-center gap-2">
+                    <span id="btn-text">Generate Coord</span>
+                </button>
+            </div>
+
+            <footer class="bg-slate-50 p-4 border-t border-slate-100 text-center">
+                <p class="text-[9px] text-slate-400 font-bold uppercase tracking-[0.1em]">Property of KCPTTC</p>
+            </footer>
+        </div>
+
+        <!-- Success Toast -->
+        <div id="toast" class="fixed bottom-10 left-1/2 -translate-x-1/2 bg-slate-900 text-white px-6 py-3 rounded-full text-xs font-bold shadow-2xl opacity-0 transition-all duration-300 translate-y-4 pointer-events-none">
+            COPIED TO CLIPBOARD
+        </div>
+    </div>
+
+    <script>
+        const combinedDisplay = document.getElementById('combined-display');
+        const accDisplay = document.getElementById('acc-val');
+        const timeDisplay = document.getElementById('time-val');
+        const statusText = document.getElementById('status-text');
+        const statusDot = document.querySelector('#status-dot span');
+        const mainBtn = document.getElementById('main-action');
+        const btnText = document.getElementById('btn-text');
+        const copyTrigger = document.getElementById('copy-trigger');
+        const tapHint = document.getElementById('tap-hint');
+        const toast = document.getElementById('toast');
+
+        let currentCoords = "";
+
+        function showToast() {
+            toast.classList.remove('opacity-0', 'translate-y-4');
+            toast.classList.add('opacity-100', 'translate-y-0');
+            setTimeout(() => {
+                toast.classList.add('opacity-0', 'translate-y-4');
+                toast.classList.remove('opacity-100', 'translate-y-0');
+            }, 2000);
+        }
+
+        function setStatus(msg, type) {
+            statusText.innerText = msg;
+            statusDot.className = 'w-2 h-2 rounded-full ' + 
+                (type === 'success' ? 'bg-green-500' : type === 'error' ? 'bg-red-500' : 'bg-blue-500 anim-pulse');
+        }
+
+        function copyToClipboard() {
+            if (!currentCoords) return;
+            
+            const textArea = document.createElement("textarea");
+            textArea.value = currentCoords;
+            document.body.appendChild(textArea);
+            textArea.select();
+            try {
+                document.execCommand('copy');
+                showToast();
+            } catch (err) {
+                console.error('Copy failed', err);
+            }
+            document.body.removeChild(textArea);
+        }
+
+        function handleLocation() {
+            if (!navigator.geolocation) {
+                setStatus("Unsupported", 'error');
+                return;
+            }
+
+            btnText.innerText = "Locating...";
+            mainBtn.disabled = true;
+            setStatus("Fetching...", 'process');
+
+            navigator.geolocation.getCurrentPosition(
+                (pos) => {
+                    const lat = pos.coords.latitude.toFixed(6);
+                    const lng = pos.coords.longitude.toFixed(6);
+                    const accuracy = Math.round(pos.coords.accuracy);
+                    const time = new Date().toLocaleTimeString([], { hour12: false });
+
+                    currentCoords = `${lat},${lng}`;
+                    combinedDisplay.innerText = currentCoords;
+                    accDisplay.innerText = `±${accuracy}m`;
+                    timeDisplay.innerText = time;
+                    
+                    setStatus("Fixed", 'success');
+                    btnText.innerText = "Refresh Coord";
+                    mainBtn.disabled = false;
+                    tapHint.style.opacity = "1";
+                    copyTrigger.style.borderStyle = "solid";
+                },
+                (err) => {
+                    btnText.innerText = "Retry";
+                    mainBtn.disabled = false;
+                    
+                    if (err.code === 1) setStatus("Denied", 'error');
+                    else if (err.code === 2) setStatus("Offline", 'error');
+                    else setStatus("Timeout", 'error');
+                },
+                { enableHighAccuracy: true, timeout: 10000 }
+            );
+        }
+
+        mainBtn.addEventListener('click', handleLocation);
+        copyTrigger.addEventListener('click', copyToClipboard);
+    </script>
+</body>
+</html>
+
